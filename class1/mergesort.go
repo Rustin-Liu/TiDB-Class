@@ -1,7 +1,5 @@
 package main
 
-// MergeSort performs the merge sort algorithm.
-// Please supplement this function to accomplish the home work.
 func MergeSort(src []int64) {
 	mergeSort(src, 0, int64(len(src)))
 }
@@ -12,8 +10,9 @@ func mergeSort(src []int64, lo int64, hi int64) {
 	var mi = (lo + hi) / 2
 	mergeSort(src, lo, mi)
 	mergeSort(src, mi, hi)
-
-	merge(src, lo, mi, hi)
+	if src[mi-1] > src[mi] {
+		merge(src, lo, mi, hi)
+	}
 }
 
 func merge(src []int64, lo int64, mi int64, hi int64) {
