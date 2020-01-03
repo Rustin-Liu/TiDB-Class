@@ -1,4 +1,4 @@
-package main
+package project_1
 
 func MergeSort(src []int64) {
 	mergeSort(src, 0, int64(len(src)))

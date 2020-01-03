@@ -1,4 +1,4 @@
-package main
+package project_1
 
 import (
 	"math/rand"
