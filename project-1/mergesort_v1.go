@@ -1,34 +1,21 @@
 package project_1
 
-import "sync"
-
-func MergeSort(src []int64) {
+func MergeSortV1(src []int64) {
 	mergeSort(src, 0, int64(len(src)))
 }
-func mergeSort(src []int64, lo int64, hi int64) {
+func mergeSortV1(src []int64, lo int64, hi int64) {
 	if hi-lo < 2 {
 		return
 	}
-	var wg sync.WaitGroup
-	wg.Add(2)
 	var mi = (lo + hi) / 2
-	go func() {
-		defer wg.Done()
-		mergeSort(src, lo, mi)
-	}()
-
-	go func() {
-		defer wg.Done()
-		mergeSort(src, mi, hi)
-	}()
-
-	wg.Wait()
+	mergeSort(src, lo, mi)
+	mergeSort(src, mi, hi)
 	if src[mi-1] > src[mi] {
 		merge(src, lo, mi, hi)
 	}
 }
 
-func merge(src []int64, lo int64, mi int64, hi int64) {
+func mergeV1(src []int64, lo int64, mi int64, hi int64) {
 	a := src[lo:]
 	var lb = mi - lo
 	b := make([]int64, lb)
