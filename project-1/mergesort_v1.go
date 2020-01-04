@@ -1,17 +1,17 @@
 package project_1
 
 func MergeSortV1(src []int64) {
-	mergeSort(src, 0, int64(len(src)))
+	mergeSortV1(src, 0, int64(len(src)))
 }
 func mergeSortV1(src []int64, lo int64, hi int64) {
 	if hi-lo < 2 {
 		return
 	}
 	var mi = (lo + hi) / 2
-	mergeSort(src, lo, mi)
-	mergeSort(src, mi, hi)
+	mergeSortV1(src, lo, mi)
+	mergeSortV1(src, mi, hi)
 	if src[mi-1] > src[mi] {
-		merge(src, lo, mi, hi)
+		mergeV1(src, lo, mi, hi)
 	}
 }
 

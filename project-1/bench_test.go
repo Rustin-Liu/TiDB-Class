@@ -10,13 +10,13 @@ import (
 	"testing"
 )
 
-var quickSortCpuProfile = flag.String("quickCpu", "", "write quick sort cpu profile `file`")
-var quickSortMemProfile = flag.String("quickMem", "", "write quick sort memory profile to `file`")
+var mergeSortCpuProfile = flag.String("mergeCpu", "", "write merge sort cpu profile `file`")
+var mergeSortMemProfile = flag.String("mergeMem", "", "write merge sort memory profile to `file`")
 
 func BenchmarkMergeSort(b *testing.B) {
 	flag.Parse()
-	if *quickSortCpuProfile != "" {
-		f, err := os.Create(*quickSortCpuProfile)
+	if *mergeSortCpuProfile != "" {
+		f, err := os.Create(*mergeSortCpuProfile)
 		if err != nil {
 			log.Fatal("could not create quick sort CPU profile: ", err)
 		}
@@ -39,8 +39,8 @@ func BenchmarkMergeSort(b *testing.B) {
 		MergeSort(src)
 	}
 
-	if *quickSortMemProfile != "" {
-		f, err := os.Create(*quickSortMemProfile)
+	if *mergeSortMemProfile != "" {
+		f, err := os.Create(*mergeSortMemProfile)
 		if err != nil {
 			log.Fatal("could not create quick sort memory profile: ", err)
 		}
@@ -52,13 +52,13 @@ func BenchmarkMergeSort(b *testing.B) {
 	}
 }
 
-var mergeSortCpuProfile = flag.String("mergeCpu", "", "write merge sort cpu profile `file`")
-var mergeSortMemProfile = flag.String("mergeMem", "", "write merge sort memory profile to `file`")
+var quickSortCpuProfile = flag.String("quickCpu", "", "write quick sort cpu profile `file`")
+var quickSortMemProfile = flag.String("quickMem", "", "write quick sort memory profile to `file`")
 
 func BenchmarkNormalSort(b *testing.B) {
 	flag.Parse()
-	if *mergeSortCpuProfile != "" {
-		f, err := os.Create(*mergeSortCpuProfile)
+	if *quickSortCpuProfile != "" {
+		f, err := os.Create(*quickSortCpuProfile)
 		if err != nil {
 			log.Fatal("could not create merge sort CPU profile: ", err)
 		}
@@ -81,8 +81,8 @@ func BenchmarkNormalSort(b *testing.B) {
 		sort.Slice(src, func(i, j int) bool { return src[i] < src[j] })
 	}
 
-	if *mergeSortMemProfile != "" {
-		f, err := os.Create(*mergeSortMemProfile)
+	if *quickSortMemProfile != "" {
+		f, err := os.Create(*quickSortMemProfile)
 		if err != nil {
 			log.Fatal("could not create merge sort memory profile: ", err)
 		}
