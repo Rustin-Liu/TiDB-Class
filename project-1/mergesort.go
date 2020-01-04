@@ -1,56 +1,51 @@
 package project_1
 
+import "sync"
+
 func MergeSort(src []int64) {
-	result := make(chan []int64)
-	go mergeSort(src, result)
-
-	res := <-result
-	copy(src, res)
-
-	close(result)
+	mergeSort(src, 0, int64(len(src)))
 }
-
-func mergeSort(src []int64, result chan []int64) {
-	if len(src) < 2 {
-		result <- src
+func mergeSort(src []int64, lo int64, hi int64) {
+	if hi-lo < 2 {
 		return
 	}
+	var wg sync.WaitGroup
+	wg.Add(1)
+	var mi = (lo + hi) / 2
+	go func() {
+		defer wg.Done()
+		mergeSort(src, lo, mi)
+	}()
 
-	leftChan := make(chan []int64)
-	rightChan := make(chan []int64)
-	middle := len(src) / 2
+	mergeSort(src, mi, hi)
 
-	go mergeSort(src[:middle], leftChan)
-	go mergeSort(src[middle:], rightChan)
-
-	leftData := <-leftChan
-	rightData := <-rightChan
-
-	close(leftChan)
-	close(rightChan)
-	result <- merge(leftData, rightData)
+	wg.Wait()
+	if src[mi-1] > src[mi] {
+		merge(src, lo, mi, hi)
+	}
 }
 
-func merge(left []int64, right []int64) []int64 {
-	result := make([]int64, len(left)+len(right))
-	leftIndex, rightIndex := 0, 0
+func merge(src []int64, lo int64, mi int64, hi int64) {
+	a := src[lo:]
+	var lb = mi - lo
+	b := make([]int64, lb)
+	var i, j, k int64
+	for i = 0; i < lb; i++ {
+		b[i] = a[i]
+	}
+	var lc = hi - mi
+	c := src[mi:]
+	for i, j, k = 0, 0, 0; j < lb; {
+		if k < lc && c[k] < b[j] {
+			a[i] = c[k]
+			i++
+			k++
+		}
 
-	for i := 0; i < cap(result); i++ {
-		switch {
-		case leftIndex >= len(left):
-			result[i] = right[rightIndex]
-			rightIndex++
-		case rightIndex >= len(right):
-			result[i] = left[leftIndex]
-			leftIndex++
-		case left[leftIndex] < right[rightIndex]:
-			result[i] = left[leftIndex]
-			leftIndex++
-		default:
-			result[i] = right[rightIndex]
-			rightIndex++
+		if lc <= k || b[j] <= c[k] {
+			a[i] = b[j]
+			i++
+			j++
 		}
 	}
-
-	return result
 }
