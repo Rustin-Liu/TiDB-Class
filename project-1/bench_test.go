@@ -10,20 +10,27 @@ import (
 	"testing"
 )
 
-var mergeSortCpuProfile = flag.String("mergeCpu", "", "write merge sort cpu profile `file`")
-var mergeSortMemProfile = flag.String("mergeMem", "", "write merge sort memory profile to `file`")
+type FileType string
+
+const (
+	CPU FileType = "Cpu"
+	MEM FileType = "Mem"
+)
+
+const MERGE string = "Merge"
+
+var version = flag.String("version", "", "sort code version")
 
 func BenchmarkMergeSort(b *testing.B) {
 	flag.Parse()
-	if *mergeSortCpuProfile != "" {
-		f, err := os.Create(*mergeSortCpuProfile)
-		if err != nil {
-			log.Fatal("could not create quick sort CPU profile: ", err)
+	if *version != "" {
+		f, err := createProfile(MERGE, CPU, *version)
+		if err == nil {
+			if err := pprof.StartCPUProfile(&f); err != nil {
+				log.Fatalf("could not start %s sort CPU profile: %s", MERGE, err.Error())
+			}
+			defer pprof.StopCPUProfile()
 		}
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start quick sort CPU profile: ", err)
-		}
-		defer pprof.StopCPUProfile()
 	}
 
 	numElements := 16 << 20
@@ -39,35 +46,19 @@ func BenchmarkMergeSort(b *testing.B) {
 		MergeSort(src)
 	}
 
-	if *mergeSortMemProfile != "" {
-		f, err := os.Create(*mergeSortMemProfile)
-		if err != nil {
-			log.Fatal("could not create quick sort memory profile: ", err)
+	if *version != "" {
+		f, err := createProfile(MERGE, MEM, *version)
+		if err == nil {
+			runtime.GC() // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(&f); err != nil {
+				log.Fatalf("could not write %s sort memory profile: %s", MERGE, err.Error())
+			}
+			f.Close()
 		}
-		runtime.GC() // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write quick sort memory profile: ", err)
-		}
-		f.Close()
 	}
 }
 
-var quickSortCpuProfile = flag.String("quickCpu", "", "write quick sort cpu profile `file`")
-var quickSortMemProfile = flag.String("quickMem", "", "write quick sort memory profile to `file`")
-
 func BenchmarkNormalSort(b *testing.B) {
-	flag.Parse()
-	if *quickSortCpuProfile != "" {
-		f, err := os.Create(*quickSortCpuProfile)
-		if err != nil {
-			log.Fatal("could not create merge sort CPU profile: ", err)
-		}
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start merge sort CPU profile: ", err)
-		}
-		defer pprof.StopCPUProfile()
-	}
-
 	numElements := 16 << 20
 	src := make([]int64, numElements)
 	original := make([]int64, numElements)
@@ -80,16 +71,13 @@ func BenchmarkNormalSort(b *testing.B) {
 		b.StartTimer()
 		sort.Slice(src, func(i, j int) bool { return src[i] < src[j] })
 	}
+}
 
-	if *quickSortMemProfile != "" {
-		f, err := os.Create(*quickSortMemProfile)
-		if err != nil {
-			log.Fatal("could not create merge sort memory profile: ", err)
-		}
-		runtime.GC() // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write merge sort memory profile: ", err)
-		}
-		f.Close()
+func createProfile(sortType string, fileType FileType, version string) (os.File, error) {
+	f, err := os.Create("prof/" + version + "/" + sortType + string(fileType) + ".prof")
+	if err != nil {
+		log.Fatalf("could not create %s sort %s profile: %s", sortType, fileType, err.Error())
+		return *f, err
 	}
+	return *f, nil
 }
