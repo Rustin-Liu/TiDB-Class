@@ -1,6 +1,6 @@
 package project_1
 
-var b = make([]int64, 16<<20)
+import "sync"
 
 func MergeSort(src []int64) {
 	mergeSort(src, 0, int64(len(src)))
@@ -9,9 +9,20 @@ func mergeSort(src []int64, lo int64, hi int64) {
 	if hi-lo < 2 {
 		return
 	}
+	var wg sync.WaitGroup
+	wg.Add(2)
 	var mi = (lo + hi) / 2
-	mergeSort(src, lo, mi)
-	mergeSort(src, mi, hi)
+	go func() {
+		defer wg.Done()
+		mergeSort(src, lo, mi)
+	}()
+
+	go func() {
+		defer wg.Done()
+		mergeSort(src, mi, hi)
+	}()
+
+	wg.Wait()
 	if src[mi-1] > src[mi] {
 		merge(src, lo, mi, hi)
 	}
@@ -20,6 +31,7 @@ func mergeSort(src []int64, lo int64, hi int64) {
 func merge(src []int64, lo int64, mi int64, hi int64) {
 	a := src[lo:]
 	var lb = mi - lo
+	b := make([]int64, lb)
 	var i, j, k int64
 	for i = 0; i < lb; i++ {
 		b[i] = a[i]
@@ -39,4 +51,5 @@ func merge(src []int64, lo int64, mi int64, hi int64) {
 			j++
 		}
 	}
+
 }
