@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -114,4 +116,18 @@ func SafeClose(f *os.File, buf *bufio.Writer) {
 func FileOrDirExist(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
+}
+
+func ihash(s string) int {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return int(h.Sum32() & 0x7fffffff)
+}
+
+func reduceName(dataDir, jobName string, mapTask int, reduceTask int) string {
+	return path.Join(dataDir, "mrtmp."+jobName+"-"+strconv.Itoa(mapTask)+"-"+strconv.Itoa(reduceTask))
+}
+
+func mergeName(dataDir, jobName string, reduceTask int) string {
+	return path.Join(dataDir, "mrtmp."+jobName+"-res-"+strconv.Itoa(reduceTask))
 }
