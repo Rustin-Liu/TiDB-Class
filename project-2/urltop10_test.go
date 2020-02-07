@@ -90,6 +90,11 @@ func testURLTop(t *testing.T, rounds RoundsArgs) {
 			} else {
 				fmt.Printf("Case%d PASS, dataSize=%v, nMapFiles=%v, cost=%v\n", i, dataSize[k], nMapFiles[k], cost)
 			}
+			for _, file := range c.MapFiles {
+				if err := os.Remove(file); err != nil {
+					log.Fatal(err)
+				}
+			}
 		}
 	}
 }
