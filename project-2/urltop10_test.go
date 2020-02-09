@@ -47,9 +47,54 @@ func TestExampleURLTop(t *testing.T) {
 	testURLTop(t, rounds)
 }
 
+func BenchmarkExampleURLTop(b *testing.B) {
+	rounds := ExampleURLTop10Args(GetMRCluster().NWorkers())
+	benchmarkURLTop10(b, rounds)
+}
+
 func TestURLTop(t *testing.T) {
 	rounds := URLTop10(GetMRCluster().NWorkers())
 	testURLTop(t, rounds)
+}
+
+func benchmarkURLTop10(b *testing.B, rounds RoundsArgs) {
+	if len(rounds) == 0 {
+		b.Fatalf("no rounds arguments, please finish your code")
+	}
+	mr := GetMRCluster()
+	dataSize := 100 * MB
+	nMapFiles := 20
+
+	// run cases.
+	gens := AllCaseGenFs()
+	b.ResetTimer()
+	for i, gen := range gens {
+		// generate data.
+		prefix := dataPrefix(i, DataSize(dataSize), nMapFiles)
+		c := gen(prefix, dataSize, nMapFiles)
+
+		runtime.GC()
+
+		// run map-reduce rounds
+		inputFiles := c.MapFiles
+		for idx, r := range rounds {
+			jobName := fmt.Sprintf("Case%d-Round%d", i, idx)
+			ch := mr.Submit(jobName, prefix, r.MapFunc, r.ReduceFunc, inputFiles, r.NReduce)
+			inputFiles = <-ch
+		}
+
+		// check result
+		if len(inputFiles) != 1 {
+			panic("the length of result file list should be 1")
+		}
+		result := inputFiles[0]
+
+		if errMsg, ok := CheckFile(c.ResultFile, result); !ok {
+			b.Fatalf("Case%d FAIL, dataSize=%v, nMapFiles=%v, %v\n", i, dataSize, nMapFiles, errMsg)
+		} else {
+			fmt.Printf("Case%d PASS, dataSize=%v, nMapFiles=%v\n", i, dataSize, nMapFiles)
+		}
+	}
 }
 
 func testURLTop(t *testing.T, rounds RoundsArgs) {
