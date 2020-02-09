@@ -87,7 +87,7 @@ func (c *MRCluster) worker() {
 			if t.phase == mapPhase {
 				content, err := ioutil.ReadFile(t.mapFile)
 				if err != nil {
-					panic(err)
+					log.Fatalf("Read file %s failed %s.\n", t.mapFile, err)
 				}
 
 				fs := make([]*os.File, t.nReduce)
@@ -100,7 +100,7 @@ func (c *MRCluster) worker() {
 				for _, kv := range results {
 					enc := json.NewEncoder(bs[ihash(kv.Key)%t.nReduce])
 					if err := enc.Encode(&kv); err != nil {
-						log.Fatalln(err)
+						log.Fatalf("Encoder write [Key: %s] failed %s.\n", kv.Key, err)
 					}
 				}
 				for i := range fs {
@@ -115,7 +115,7 @@ func (c *MRCluster) worker() {
 					fileName := reduceName(t.dataDir, t.jobName, i, t.taskNumber)
 					imm, err := os.Open(fileName)
 					if err != nil {
-						log.Fatalln(err)
+						log.Fatalf("Open imm file %s failed %s.\n", fileName, err)
 					}
 					var kv KeyValue
 					dec := json.NewDecoder(imm)
@@ -131,23 +131,23 @@ func (c *MRCluster) worker() {
 					}
 					err = imm.Close()
 					if err != nil {
-						log.Fatalln(err)
+						log.Fatalf("Close imm file %s failed %s.\n", fileName, err)
 					}
 				}
 				sort.Strings(keys)
 				outFileName := mergeName(t.dataDir, t.jobName, t.taskNumber)
 				out, err := os.Create(outFileName)
 				if err != nil {
-					log.Fatalln(err)
+					log.Fatalf("Create file %s failed %s.\n", outFileName, err)
 				}
 				for _, key := range keys {
 					if _, err = fmt.Fprintf(out, "%v", t.reduceF(key, kvs[key])); err != nil {
-						log.Printf("write [key: %s] to file %s failed", key, outFileName)
+						log.Fatalf("write [key: %s] to file %s failed", key, outFileName)
 					}
 				}
 				err = out.Close()
 				if err != nil {
-					log.Fatalln(err)
+					log.Fatalf("Close file %s failed %s.\n", outFileName, err)
 				}
 			}
 			t.wg.Done()
@@ -171,6 +171,7 @@ func (c *MRCluster) Submit(jobName, dataDir string, mapF MapF, reduceF ReduceF, 
 }
 
 func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, mapFiles []string, nReduce int, notify chan<- []string) {
+	log.Printf("Strating %s map phase.\n", jobName)
 	// map phase
 	nMap := len(mapFiles)
 	tasks := make([]*task, 0, nMap)
@@ -187,11 +188,16 @@ func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, map
 		}
 		t.wg.Add(1)
 		tasks = append(tasks, t)
-		go func() { c.taskCh <- t }()
+		log.Printf("Create task %v in %s map phase.\n", t.taskNumber, jobName)
+		go func() {
+			c.taskCh <- t
+			log.Printf("Add task to task %v chan in %s map phase.\n", t.taskNumber, jobName)
+		}()
 	}
 	for _, t := range tasks {
 		t.wg.Wait()
 	}
+	log.Printf("The map phase of %s down.\n", jobName)
 	tasks = make([]*task, 0, nReduce)
 	for i := 0; i < nReduce; i++ {
 		t := &task{
@@ -205,11 +211,16 @@ func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, map
 		}
 		t.wg.Add(1)
 		tasks = append(tasks, t)
-		go func() { c.taskCh <- t }()
+		log.Printf("Create task %v in %s reduce phase.\n", t.taskNumber, jobName)
+		go func() {
+			c.taskCh <- t
+			log.Printf("Add task to task %v chan in %s reduce phase.\n", t.taskNumber, jobName)
+		}()
 	}
 	for _, t := range tasks {
 		t.wg.Wait()
 	}
+	log.Printf("The reduce phase of %s down.\n", jobName)
 	notify <- []string{merge(jobName, dataDir, nReduce)}
 }
 
@@ -217,28 +228,29 @@ func merge(jobName, dataDir string, nReduce int) string {
 	resultFileName := jobName + ".txt"
 	file, err := os.Create(resultFileName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Create file %s failed %s.\n", resultFileName, err)
 	}
 	w := bufio.NewWriter(file)
 	for i := 0; i < nReduce; i++ {
 		fileName := mergeName(dataDir, jobName, i)
 		file, err := os.Open(fileName)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalf("Open file %s failed %s.\n", fileName, err)
 		}
 		content, err := ioutil.ReadFile(fileName)
 		if err != nil {
-			panic(err)
+			log.Fatalf("Read file %s failed %s.\n", fileName, err)
 		}
 		_, err = w.Write(content)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalf("Write file %s failed %s.\n", resultFileName, err)
 		}
 		err = file.Close()
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalf("Close file %s failed %s.\n", fileName, err)
 		}
 	}
 	SafeClose(file, w)
+	log.Printf("Merge all reduce output conents of %s into %s", jobName, resultFileName)
 	return resultFileName
 }

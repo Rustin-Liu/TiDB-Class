@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -104,11 +105,11 @@ func WriteToBuf(buf *bufio.Writer, strs ...string) {
 func SafeClose(f *os.File, buf *bufio.Writer) {
 	if buf != nil {
 		if err := buf.Flush(); err != nil {
-			panic(err)
+			log.Fatalf("Flush buffer failed %s.\n", err)
 		}
 	}
 	if err := f.Close(); err != nil {
-		panic(err)
+		log.Fatalf("Close file %s failed %s.\n", f.Name(), err)
 	}
 }
 
@@ -130,4 +131,15 @@ func reduceName(dataDir, jobName string, mapTask int, reduceTask int) string {
 
 func mergeName(dataDir, jobName string, reduceTask int) string {
 	return path.Join(dataDir, "mrtmp."+jobName+"-res-"+strconv.Itoa(reduceTask))
+}
+
+// Debugging enabled?
+const debugEnabled = true
+
+// debug() will only print if debugEnabled is true
+func debug(format string, a ...interface{}) (n int, err error) {
+	if debugEnabled {
+		n, err = fmt.Printf(format, a...)
+	}
+	return
 }
