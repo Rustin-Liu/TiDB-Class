@@ -141,7 +141,7 @@ func (c *MRCluster) worker() {
 					log.Fatalf("Create file %s failed %s.\n", outFileName, err)
 				}
 				for _, key := range keys {
-					if _, err = fmt.Fprintf(out, "%v", t.reduceF(key, kvs[key])); err != nil {
+					if _, err = fmt.Fprintf(out, "%s", t.reduceF(key, kvs[key])); err != nil {
 						log.Fatalf("write [key: %s] to file %s failed", key, outFileName)
 					}
 				}
