@@ -16,12 +16,6 @@ func testDataScale() ([]DataSize, []int) {
 	return dataSize, nMapFiles
 }
 
-func benchmarkDataScale() (DataSize, int) {
-	dataSize := DataSize(100 * MB)
-	nMapFiles := 20
-	return dataSize, nMapFiles
-}
-
 const (
 	dataDir = "/tmp/mr_homework"
 )

@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func benchmarkDataScale() (DataSize, int) {
+	dataSize := DataSize(100 * MB)
+	nMapFiles := 20
+	return dataSize, nMapFiles
+}
+
 func BenchmarkExampleURLTop(b *testing.B) {
 	rounds := ExampleURLTop10Args(GetMRCluster().NWorkers())
 	benchmarkURLTop10(b, rounds)
