@@ -191,7 +191,7 @@ func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, map
 		log.Printf("Create task %v in %s map phase.\n", t.taskNumber, jobName)
 		go func() {
 			c.taskCh <- t
-			log.Printf("Add task to task %v chan in %s map phase.\n", t.taskNumber, jobName)
+			log.Printf("Add task %v to task chan in %s map phase.\n", t.taskNumber, jobName)
 		}()
 	}
 	for _, t := range tasks {
@@ -214,7 +214,7 @@ func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, map
 		log.Printf("Create task %v in %s reduce phase.\n", t.taskNumber, jobName)
 		go func() {
 			c.taskCh <- t
-			log.Printf("Add task to task %v chan in %s reduce phase.\n", t.taskNumber, jobName)
+			log.Printf("Add task %v to task chan in %s reduce phase.\n", t.taskNumber, jobName)
 		}()
 	}
 	for _, t := range tasks {

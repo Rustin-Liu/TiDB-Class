@@ -16,6 +16,12 @@ func testDataScale() ([]DataSize, []int) {
 	return dataSize, nMapFiles
 }
 
+func benchmarkDataScale() (DataSize, int) {
+	dataSize := DataSize(100 * MB)
+	nMapFiles := 20
+	return dataSize, nMapFiles
+}
+
 const (
 	dataDir = "/tmp/mr_homework"
 )
@@ -62,16 +68,14 @@ func benchmarkURLTop10(b *testing.B, rounds RoundsArgs) {
 		b.Fatalf("no rounds arguments, please finish your code")
 	}
 	mr := GetMRCluster()
-	dataSize := 100 * MB
-	nMapFiles := 20
-
+	dataSize, nMapFiles := benchmarkDataScale()
 	// run cases.
 	gens := AllCaseGenFs()
 	b.ResetTimer()
 	for i, gen := range gens {
 		// generate data.
-		prefix := dataPrefix(i, DataSize(dataSize), nMapFiles)
-		c := gen(prefix, dataSize, nMapFiles)
+		prefix := dataPrefix(i, dataSize, nMapFiles)
+		c := gen(prefix, int(dataSize), nMapFiles)
 
 		runtime.GC()
 
