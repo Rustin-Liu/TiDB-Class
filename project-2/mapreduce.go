@@ -29,7 +29,7 @@ type jobPhase string
 
 const (
 	mapPhase    jobPhase = "mapPhase"
-	reducePhase          = "reducePhase"
+	reducePhase jobPhase = "reducePhase"
 )
 
 type task struct {
