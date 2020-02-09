@@ -1,4 +1,4 @@
-package main
+package project_2
 
 // URLTop10 .
 func URLTop10(nWorkers int) RoundsArgs {

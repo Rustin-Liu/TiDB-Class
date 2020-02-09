@@ -1,10 +1,19 @@
-package main
+package project_2
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"runtime"
+	"runtime/pprof"
 	"testing"
+
+	"github.com/pingcap/talentplan/tidb/util"
 )
+
+var version = flag.String("version", "", "sort code version")
+
+const Example string = "Example"
 
 func benchmarkDataScale() (DataSize, int) {
 	dataSize := DataSize(100 * MB)
@@ -13,8 +22,28 @@ func benchmarkDataScale() (DataSize, int) {
 }
 
 func BenchmarkExampleURLTop(b *testing.B) {
+	flag.Parse()
+	if *version != "" {
+		f, err := util.CreateProfile(Example, util.Cpu, *version)
+		if err == nil {
+			if err := pprof.StartCPUProfile(&f); err != nil {
+				log.Fatalf("could not start %s mr CPU profile: %s", Example, err.Error())
+			}
+			defer pprof.StopCPUProfile()
+		}
+	}
 	rounds := ExampleURLTop10Args(GetMRCluster().NWorkers())
 	benchmarkURLTop10(b, rounds)
+	if *version != "" {
+		f, err := util.CreateProfile(Example, util.Mem, *version)
+		if err == nil {
+			runtime.GC() // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(&f); err != nil {
+				log.Fatalf("could not write %s mr memory profile: %s", Example, err.Error())
+			}
+			f.Close()
+		}
+	}
 }
 
 func benchmarkURLTop10(b *testing.B, rounds RoundsArgs) {

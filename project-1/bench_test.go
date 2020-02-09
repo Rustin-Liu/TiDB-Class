@@ -3,31 +3,25 @@ package project_1
 import (
 	"flag"
 	"log"
-	"os"
 	"runtime"
 	"runtime/pprof"
 	"sort"
 	"testing"
+
+	"github.com/pingcap/talentplan/tidb/util"
 )
 
-type FileType string
-
-const (
-	CPU FileType = "Cpu"
-	MEM FileType = "Mem"
-)
-
-const MERGE string = "Merge"
+const Merge string = "Merge"
 
 var version = flag.String("version", "", "sort code version")
 
 func BenchmarkMergeSort(b *testing.B) {
 	flag.Parse()
 	if *version != "" {
-		f, err := createProfile(MERGE, CPU, *version)
+		f, err := util.CreateProfile(Merge, util.Cpu, *version)
 		if err == nil {
 			if err := pprof.StartCPUProfile(&f); err != nil {
-				log.Fatalf("could not start %s sort CPU profile: %s", MERGE, err.Error())
+				log.Fatalf("could not start %s sort CPU profile: %s", Merge, err.Error())
 			}
 			defer pprof.StopCPUProfile()
 		}
@@ -47,11 +41,11 @@ func BenchmarkMergeSort(b *testing.B) {
 	}
 
 	if *version != "" {
-		f, err := createProfile(MERGE, MEM, *version)
+		f, err := util.CreateProfile(Merge, util.Mem, *version)
 		if err == nil {
 			runtime.GC() // get up-to-date statistics
 			if err := pprof.WriteHeapProfile(&f); err != nil {
-				log.Fatalf("could not write %s sort memory profile: %s", MERGE, err.Error())
+				log.Fatalf("could not write %s sort memory profile: %s", Merge, err.Error())
 			}
 			f.Close()
 		}
@@ -71,13 +65,4 @@ func BenchmarkNormalSort(b *testing.B) {
 		b.StartTimer()
 		sort.Slice(src, func(i, j int) bool { return src[i] < src[j] })
 	}
-}
-
-func createProfile(sortType string, fileType FileType, version string) (os.File, error) {
-	f, err := os.Create("prof/" + version + "/" + sortType + string(fileType) + ".prof")
-	if err != nil {
-		log.Fatalf("could not create %s sort %s profile: %s", sortType, fileType, err.Error())
-		return *f, err
-	}
-	return *f, nil
 }

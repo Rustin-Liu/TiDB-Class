@@ -1,4 +1,4 @@
-package main
+package project_2
 
 import (
 	"bufio"
@@ -251,6 +251,6 @@ func merge(jobName, dataDir string, nReduce int) string {
 		}
 	}
 	SafeClose(file, w)
-	log.Printf("Merge all reduce output conents of %s into %s", jobName, resultFileName)
+	log.Printf("Example all reduce output conents of %s into %s", jobName, resultFileName)
 	return resultFileName
 }
