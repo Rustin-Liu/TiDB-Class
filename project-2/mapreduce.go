@@ -142,7 +142,7 @@ func (c *MRCluster) worker() {
 				}
 				for _, key := range keys {
 					if _, err = fmt.Fprintf(out, "%s", t.reduceF(key, kvs[key])); err != nil {
-						log.Fatalf("write [key: %s] to file %s failed", key, outFileName)
+						log.Fatalf("write [key: %s] to file %s failed\n", key, outFileName)
 					}
 				}
 				err = out.Close()
