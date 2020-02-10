@@ -136,7 +136,7 @@ func mergeName(dataDir, jobName string, reduceTask int) string {
 // Debugging enabled?
 const debugEnabled = true
 
-// debug() will only print if debugEnabled is true
+// debug will only print if debugEnabled is true
 func debug(format string, a ...interface{}) (n int, err error) {
 	if debugEnabled {
 		n, err = fmt.Printf(format, a...)

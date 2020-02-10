@@ -3,16 +3,17 @@ package project_2
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
 
-// ExampleURLTop10Args generates RoundsArgs for getting the 10 most frequent URLs.
+// ExampleURLTop10 generates RoundsArgs for getting the 10 most frequent URLs.
 // There are two rounds in this approach.
 // The first round will do url count.
 // The second will sort results generated in the first round and
 // get the 10 most frequent URLs.
-func ExampleURLTop10Args(nWorkers int) RoundsArgs {
+func ExampleURLTop10(nWorkers int) RoundsArgs {
 	var args RoundsArgs
 	// round 1: do url count.
 	args = append(args, RoundArgs{
@@ -77,7 +78,10 @@ func ExampleURLTop10Reduce(key string, values []string) string {
 	us, cs := TopN(cnts, 10)
 	buf := new(bytes.Buffer)
 	for i := range us {
-		fmt.Fprintf(buf, "%s: %d\n", us[i], cs[i])
+		_, err := fmt.Fprintf(buf, "%s: %d\n", us[i], cs[i])
+		if err != nil {
+			log.Fatalf("Fprintf to buf failed %s", err)
+		}
 	}
 	return buf.String()
 }

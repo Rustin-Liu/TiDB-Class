@@ -43,7 +43,7 @@ func TestCleanData(t *testing.T) {
 }
 
 func TestExampleURLTop(t *testing.T) {
-	rounds := ExampleURLTop10Args(GetMRCluster().NWorkers())
+	rounds := ExampleURLTop10(GetMRCluster().NWorkers())
 	testURLTop(t, rounds)
 }
 

@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"sync"
 )
 
@@ -134,7 +135,14 @@ func (c *MRCluster) worker() {
 						log.Fatalf("Close imm file %s failed %s.\n", fileName, err)
 					}
 				}
-				sort.Strings(keys)
+				sort.Slice(keys, func(i, j int) bool {
+					a1, err1 := strconv.Atoi(keys[i])
+					b1, err2 := strconv.Atoi(keys[j])
+					if err1 != nil || err2 != nil {
+						return keys[i] < keys[j]
+					}
+					return a1 > b1
+				})
 				outFileName := mergeName(t.dataDir, t.jobName, t.taskNumber)
 				out, err := os.Create(outFileName)
 				if err != nil {

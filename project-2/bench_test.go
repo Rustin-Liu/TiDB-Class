@@ -32,7 +32,7 @@ func BenchmarkExampleURLTop(b *testing.B) {
 			defer pprof.StopCPUProfile()
 		}
 	}
-	rounds := ExampleURLTop10Args(GetMRCluster().NWorkers())
+	rounds := ExampleURLTop10(GetMRCluster().NWorkers())
 	benchmarkURLTop10(b, rounds)
 	if *version != "" {
 		f, err := util.CreateProfile(Example, util.Mem, *version)
@@ -44,6 +44,11 @@ func BenchmarkExampleURLTop(b *testing.B) {
 			f.Close()
 		}
 	}
+}
+
+func BenchmarkURLTop(b *testing.B) {
+	rounds := URLTop10(GetMRCluster().NWorkers())
+	benchmarkURLTop10(b, rounds)
 }
 
 func benchmarkURLTop10(b *testing.B, rounds RoundsArgs) {
@@ -59,8 +64,6 @@ func benchmarkURLTop10(b *testing.B, rounds RoundsArgs) {
 		// generate data.
 		prefix := dataPrefix(i, dataSize, nMapFiles)
 		c := gen(prefix, int(dataSize), nMapFiles)
-
-		runtime.GC()
 
 		// run map-reduce rounds
 		inputFiles := c.MapFiles
