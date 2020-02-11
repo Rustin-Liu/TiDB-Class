@@ -47,8 +47,28 @@ func BenchmarkExampleURLTop(b *testing.B) {
 }
 
 func BenchmarkURLTop(b *testing.B) {
+	flag.Parse()
+	if *version != "" {
+		f, err := util.CreateProfile(Example, util.Cpu, *version)
+		if err == nil {
+			if err := pprof.StartCPUProfile(&f); err != nil {
+				log.Fatalf("could not start %s mr CPU profile: %s", Example, err.Error())
+			}
+			defer pprof.StopCPUProfile()
+		}
+	}
 	rounds := URLTop10(GetMRCluster().NWorkers())
 	benchmarkURLTop10(b, rounds)
+	if *version != "" {
+		f, err := util.CreateProfile(Example, util.Mem, *version)
+		if err == nil {
+			runtime.GC() // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(&f); err != nil {
+				log.Fatalf("could not write %s mr memory profile: %s", Example, err.Error())
+			}
+			f.Close()
+		}
+	}
 }
 
 func benchmarkURLTop10(b *testing.B, rounds RoundsArgs) {

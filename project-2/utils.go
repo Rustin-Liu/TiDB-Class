@@ -132,14 +132,3 @@ func reduceName(dataDir, jobName string, mapTask int, reduceTask int) string {
 func mergeName(dataDir, jobName string, reduceTask int) string {
 	return path.Join(dataDir, "mrtmp."+jobName+"-res-"+strconv.Itoa(reduceTask))
 }
-
-// Debugging enabled?
-const debugEnabled = true
-
-// debug will only print if debugEnabled is true
-func debug(format string, a ...interface{}) (n int, err error) {
-	if debugEnabled {
-		n, err = fmt.Printf(format, a...)
-	}
-	return
-}
