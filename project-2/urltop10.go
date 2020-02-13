@@ -1,9 +1,7 @@
 package project_2
 
 import (
-	"bytes"
 	"fmt"
-	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -72,16 +70,12 @@ func URLTop10Map(filename string, contents string) []KeyValue {
 // URLTop10Reduce is the reduce function in the second round.
 func URLTop10Reduce(key string, values []string) string {
 	sort.Strings(values)
-	buf := new(bytes.Buffer)
+	var result string
 	for _, val := range values {
 		if atomic.LoadInt64(&count) != 10 {
-			_, err := fmt.Fprintf(buf, "%s: %s\n", val, key)
-			if err == nil {
-				atomic.AddInt64(&count, 1)
-			} else {
-				log.Fatalf("Fprintf to buf failed %s", err)
-			}
+			result += fmt.Sprintf("%s: %s\n", val, key)
+			atomic.AddInt64(&count, 1)
 		}
 	}
-	return buf.String()
+	return result
 }
