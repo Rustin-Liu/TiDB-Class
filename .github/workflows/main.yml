@@ -1,0 +1,29 @@
+name: TiDB-Class-Main
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+env:
+  GOPROXY: "https://goproxy.cn"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+      - name: Build and Test project1
+        working-directory: ./project-1
+        run: go test
+      - name: Build and Test project2
+        working-directory: ./project-2
+        run: |
+          go test  -test.run=TestGenData
+          go test  -test.run=TestCleanData
+

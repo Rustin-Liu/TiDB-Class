@@ -37,19 +37,25 @@ func TestGenData(t *testing.T) {
 }
 
 func TestCleanData(t *testing.T) {
-	if err := os.RemoveAll(dataDir); err != nil {
-		log.Fatal(err)
-	}
+	cleanData()
 }
 
 func TestExampleURLTop(t *testing.T) {
+	cleanData()
 	rounds := ExampleURLTop10(GetMRCluster().NWorkers())
 	testURLTop(t, rounds)
 }
 
 func TestURLTop(t *testing.T) {
+	cleanData()
 	rounds := URLTop10(GetMRCluster().NWorkers())
 	testURLTop(t, rounds)
+}
+
+func cleanData() {
+	if err := os.RemoveAll(dataDir); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func testURLTop(t *testing.T, rounds RoundsArgs) {
