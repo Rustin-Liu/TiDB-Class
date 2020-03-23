@@ -21,9 +21,4 @@ jobs:
       - name: Build and Test project1
         working-directory: ./project-1
         run: go test
-      - name: Build and Test project2
-        working-directory: ./project-2
-        run: |
-          go test  -test.run=TestGenData
-          go test  -test.run=TestCleanData
 
